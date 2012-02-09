@@ -197,4 +197,51 @@ public class Database {
 			}
 		}
 	}
+
+	public boolean bookTicket(String movieName, String date) {
+		PreparedStatement ps = null;
+		ArrayList<Map<String, String>> performances = new ArrayList<Map<String, String>>();
+		
+		try {
+			conn.setAutoCommit(false);
+			String sql = "INSERT INTO Reservation(user_name, show_date, movie_name) " +
+					"VALUES (?, ?, ?)";
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, CurrentUser.instance().getCurrentUserId());
+			ps.setString(2, date);
+			ps.setString(3, movieName);
+			ps.executeUpdate();
+			ps.close();
+			
+			sql = "SELECT t.seats - COUNT(r.nbr) AS free_seats " +
+					"FROM Performance p " +
+					"JOIN Theatre t ON(t.name = p.theatre_name) " +
+					"LEFT JOIN Reservation r ON(p.show_date = r.show_date AND p.movie_name = r.movie_name) " +
+					"WHERE p.movie_name = ? AND p.show_date = ? ";
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, movieName);
+			ps.setString(2, date);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			if(rs.getInt("free_seats") < 0) {
+				conn.rollback();
+				return false;
+			} else {
+				conn.commit();
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return false;
+		} finally {
+			try {
+				conn.rollback();
+				conn.setAutoCommit(true);
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
 }

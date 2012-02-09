@@ -279,7 +279,12 @@ public class BookingPane extends BasicPane {
 			}
 			String movieName = (String) nameList.getSelectedValue();
 			String date = (String) dateList.getSelectedValue();
-			/* --- insert own code here --- */
+			
+			if(db.bookTicket(movieName, date)) {
+				// Ticket got booked
+			} else {
+				// ticket booking failed
+			}
 		}
 	}
 }
