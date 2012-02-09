@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * The GUI pane where a user books tickets for movie performances. It contains
@@ -173,17 +175,26 @@ public class BookingPane extends BasicPane {
 	 * Fetch movie names from the database and display them in the name list.
 	 */
 	private void fillNameList() {
+		Collection<String> movies = db.getMovies();
 		nameListModel.removeAllElements();
-        /* --- insert own code here --- */
+		
+		for(String movie : movies) {
+			nameListModel.addElement(movie);
+		}
 	}
 
 	/**
 	 * Fetch performance dates from the database and display them in the date
 	 * list.
 	 */
-	private void fillDateList() {
+	private void fillDateList(String movieName) {
 		dateListModel.removeAllElements();
-        /* --- insert own code here --- */
+		Collection<Map<String, String>> performances;
+		
+		performances = db.getPerformances(movieName);
+		for(Map<String, String> performance : performances) {
+			dateListModel.addElement(performance.get("show_date"));
+		}
 	}
 
 	/**
@@ -212,7 +223,7 @@ public class BookingPane extends BasicPane {
 				return;
 			}
 			String movieName = (String) nameList.getSelectedValue();
-			/* --- insert own code here --- */
+			fillDateList(movieName);
 		}
 	}
 
@@ -229,12 +240,20 @@ public class BookingPane extends BasicPane {
 		 *            The selected list item.
 		 */
 		public void valueChanged(ListSelectionEvent e) {
+			Map<String, String> performanceData;
+			
 			if (nameList.isSelectionEmpty() || dateList.isSelectionEmpty()) {
 				return;
 			}
 			String movieName = (String) nameList.getSelectedValue();
 			String date = (String) dateList.getSelectedValue();
-			/* --- insert own code here --- */
+			
+			performanceData = db.getPerformanceData(movieName, date);
+			performanceData.get("movie_name");
+			fields[MOVIE_NAME].setText(performanceData.get("movie_name"));
+			fields[PERF_DATE].setText(performanceData.get("show_date"));
+			fields[THEATER_NAME].setText(performanceData.get("theatre_name"));
+			fields[FREE_SEATS].setText(performanceData.get("free_seats"));
 		}
 	}
 

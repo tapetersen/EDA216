@@ -1,6 +1,9 @@
 package dbtLab3;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.sql.*;
 
 /**
@@ -77,5 +80,121 @@ public class Database {
 	}
 
 	/* --- insert own code here --- */
+	public void loginUser(String userId) {
+		PreparedStatement ps = null;
+		try {
+			String sql = "SELECT user_name, name, addres, phone " +
+					"FROM User " +
+					"WHERE user_name = ?";
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, userId);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next()) {
+				userId = rs.getString("user_name");
+				CurrentUser.instance().loginAs(userId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public Collection<String> getMovies() {
+		PreparedStatement ps = null;
+		ArrayList<String> movies = new ArrayList<String>();
+		
+		try {
+			String sql = "SELECT name " +
+					"FROM Movie";
+			ps = conn.prepareStatement(sql);
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				movies.add(rs.getString("name"));
+			}
+			return movies;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
+	public Collection<Map<String, String>> getPerformances(String movieName) {
+		PreparedStatement ps = null;
+		ArrayList<Map<String, String>> performances = new ArrayList<Map<String, String>>();
+		
+		try {
+			String sql = "SELECT show_date, movie_name, theatre_name " +
+					"FROM Performance " +
+					"WHERE movie_name = ?";
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, movieName);
+			
+			ResultSet rs = ps.executeQuery();
+			while(rs.next()) {
+				Map<String, String> performance = new HashMap<String, String>(3);
+				performance.put("show_date", rs.getString("show_date"));
+				performance.put("movie_name", rs.getString("movie_name"));
+				performance.put("theatre_name", rs.getString("theatre_name"));
+				
+				performances.add(performance);
+			}
+			return performances;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public Map<String, String> getPerformanceData(String movieName, String date) {
+		PreparedStatement ps = null;
+		Map<String, String> performance = new HashMap<String, String>(4);
+		
+		try {
+			String sql = "SELECT p.show_date, p.movie_name, p.theatre_name, t.seats - COUNT(r.nbr) AS free_seats " +
+					"FROM Performance p " +
+					"LEFT JOIN Reservation r ON (p.movie_name = r.movie_name AND p.show_date = r.show_date) " +
+					"JOIN Theatre t ON (p.theatre_name = t.name) " +
+					"WHERE p.movie_name = ? AND p.show_date = ?";
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, movieName);
+			ps.setString(2, date); // Should propably be bound as date instead but whatever
+			
+			ResultSet rs = ps.executeQuery();
+			if(rs.next()) {
+				performance.put("show_date", rs.getString("show_date"));
+				performance.put("movie_name", rs.getString("movie_name"));
+				performance.put("theatre_name", rs.getString("theatre_name"));
+				performance.put("free_seats", rs.getString("free_seats"));
+				
+				return performance;
+			}
+			return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 }
