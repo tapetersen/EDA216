@@ -79,7 +79,6 @@ public class Database {
 		return conn != null;
 	}
 
-	/* --- insert own code here --- */
 	public void loginUser(String userId) {
 		PreparedStatement ps = null;
 		try {

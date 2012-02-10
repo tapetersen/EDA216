@@ -53,8 +53,6 @@ public class MovieGUI {
 
 		userLoginPane.displayMessage("Connecting to database ...");
 		
-		/* --- change code here --- */
-		/* --- change xxx to your user name, yyy to your password --- */
 		if (db.openConnection("db20", "wordpass")) {
 			userLoginPane.displayMessage("Connected to database");
 		} else {
