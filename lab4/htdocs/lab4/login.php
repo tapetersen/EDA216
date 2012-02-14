@@ -1,24 +1,19 @@
 <?php
-	require_once('database.inc.php');
-	require_once("mysql_connect_data.inc.php");
+	require_once('init.php');
 	
-	$db = new Database($userName, $password, $database);
 	$db->openConnection();
 	if (! $db->isConnected()) {
-		header("Location: cannotConnect.html");
+		//header("Location: cannotConnect.html");
 		exit();
 	}
 	
-	$userId = $_REQUEST['userId'];
-	if (! $db->userExists($userId)) {
-		$db->closeConnection();
-		header("Location: noSuchUser.html");
-		exit();
-	}
-	$db->closeConnection();
+	if(!is_post())
+		redirect('index.html');
 	
-	session_start();
-	$_SESSION['db'] = $db;
-	$_SESSION['userId'] = $userId;
-	header("Location: booking1.php");
+	$user_name = $_POST['user_name'];
+	if (! $db->userExists($user_name)) 
+		redirect('index.html');
+	
+	$_SESSION['user_name'] = $user_name;
+	redirect("booking1.php");
 ?>
